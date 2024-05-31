@@ -1,0 +1,97 @@
+---
+title: "qualtric_data_cleaning"
+author: "Bernice Cheung"
+date: '2024-05-31'
+output:
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(error = FALSE, warning = FALSE, message = FALSE)
+```
+
+```{r libraries}
+library(tidyverse)
+library(here)
+library(psych)
+library(janitor)
+library(broom)
+library(gt)
+library(gtsummary)
+library(rio)
+if (!require(scorequaltrics)) {
+  install.packages('scorequaltrics')
+}
+```
+
+# Prep
+
+## Pull qualtric data
+
+define variables and paths
+```{r}
+keep_columns = '(ResponseId|order|Finished|Progress|no_consent|failed|)'
+cred_file_location = here("script", "credentials.yaml.DEFAULT")
+survey_name_filter = "ASH"
+ignore_items = "IPAddress|RecipientFirstName|RecipientLastName|RecipientEmail|ExternalReference|LocationLatitude|LocationLongitude"
+```
+
+fetch relevant qualtric survey names
+```{r}
+credentials = scorequaltrics::creds_from_file("/Users/BerniceCheung/Dropbox (University of Oregon)/ResearchProject/MANS/mans_data_cleaning/scripts/credentials.yaml.DEFAULT")
+
+# filter
+surveysAvail = scorequaltrics::get_surveys()
+surveysFiltered = filter(surveysAvail, grepl(survey_name_filter, name))
+
+```
+fetch individual survey
+```{r}
+# session 0
+raw_df_s0 <- fetch_survey(
+  surveyID = surveysFiltered$id[1],
+  force_request = TRUE,
+  label = FALSE,
+  convert = FALSE
+)
+
+# session 1
+raw_df_s1 <- fetch_survey(
+  surveyID = surveysFiltered$id[2],
+  force_request = TRUE,
+  label = FALSE,
+  convert = FALSE
+)
+
+# session 2
+raw_df_s2 <- fetch_survey(
+  surveyID = surveysFiltered$id[3],
+  force_request = TRUE,
+  label = FALSE,
+  convert = FALSE
+)
+```
+
+## define functions
+```{r}
+screenout_tesitng = function(df) {
+  df %>%
+    mutate()
+}
+```
+
+
+
+## screen out testing cases
+```{r}
+df_s0_notest <- raw_df_s0 %>%
+  filter(DistributionChannel != "preview") %>%
+  filter(grepl("^(ash|[0-9])", ASH_ID, ignore.case = TRUE))
+
+
+```
+
+
